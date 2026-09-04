@@ -81,7 +81,8 @@ ytdl_format_options = {
     "no_warnings": True,
     "default_search": "ytsearch",
     "source_address": "0.0.0.0",
-    "cookiefile": cookies_path,  # Aponta para o caminho absoluto seguro
+    "cookiefile": cookies_path,
+    'extractor_args': {'youtube': {'player_client': ['android', 'web']}},
 }
 ytdl = yt_dlp.YoutubeDL(ytdl_format_options)
 
