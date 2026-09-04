@@ -68,22 +68,25 @@ base_dir = os.path.dirname(os.path.abspath(__file__))
 cookies_path = os.path.join(base_dir, "cookies.txt")
 
 ytdl_format_options = {
-    "format": "bestaudio/best",
-    "noplaylist": True,
-    "extractaudio": True,
-    "audioformat": "mp3",
-    "outtmpl": "%(extractor)s-%(id)s-%(title)s.%(ext)s",
-    "restrictfilenames": True,
-    "nocheckcertificate": True,
-    "ignoreerrors": False,
-    "logtostderr": False,
-    "quiet": True,
-    "no_warnings": True,
-    "default_search": "ytsearch",
-    "source_address": "0.0.0.0",
-    "cookiefile": cookies_path,
-    'extractor_args': {'youtube': {'player_client': ['android', 'web']}},
+    'format': 'bestaudio',  # Mais genérico e menos restritivo
+    'noplaylist': True,
+    'extractaudio': True,
+    'audioformat': 'mp3',
+    'outtmpl': '%(extractor)s-%(id)s-%(title)s.%(ext)s',
+    'restrictfilenames': True,
+    'nocheckcertificate': True,
+    'ignoreerrors': False,
+    'logtostderr': False,
+    'quiet': True,
+    'no_warnings': True,
+    'default_search': 'ytsearch',
+    'source_address': '0.0.0.0',
+    'cookiefile': cookies_path,
+    'extractor_args': {
+        'youtube': {'player_client': ['android', 'web']}
+    },
 }
+
 ytdl = yt_dlp.YoutubeDL(ytdl_format_options)
 
 
