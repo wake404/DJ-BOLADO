@@ -9,6 +9,16 @@ from flask import Flask
 import yt_dlp
 import subprocess
 
+# Carrega as variáveis de ambiente com prioridade absoluta
+load_dotenv()
+TOKEN = os.getenv("DISCORD_TOKEN")
+
+# Trava de segurança crítica: impede a execução pública sem token configurado no .env
+if not TOKEN:
+    raise ValueError(
+        "❌ ERRO CRÍTICO DE SEGURANÇA: Token do Discord não encontrado! Configure o arquivo .env ou as variáveis de ambiente do Render."
+    )
+
 # Atualiza o yt-dlp para a versão mais recente diretamente na inicialização do Render
 try:
     print("Verificando atualizações do yt-dlp...")
@@ -19,15 +29,13 @@ try:
 except Exception as e:
     print(f"Não foi possível atualizar o yt-dlp automaticamente: {e}")
 
-
-
 # --- SERVIDOR WEB PARA O RENDER (Mantém a porta 8080 aberta) ---
 app = Flask("")
 
 
 @app.route("/")
 def home():
-    return "Bot DJ Bolado Online!"
+    return "Bot DJ Bolado Online com Segurança Avançada!"
 
 
 def run():
@@ -43,10 +51,6 @@ def keep_alive():
 keep_alive()
 # -------------------------------------------------------------
 
-# Carrega o token secreto do arquivo .env
-load_dotenv()
-TOKEN = os.getenv("DISCORD_TOKEN")
-
 # Configura as permissões (intents) do bot
 intents = discord.Intents.default()
 intents.message_content = True
@@ -60,12 +64,18 @@ queues = {}
 volumes = {}
 loop_modes = {}
 filters = {}
-disconnect_tasks = {}  # Gerencia tarefas de inatividade para evitar bugs
-import os
+disconnect_tasks = {}  # Gerencia tarefas de inatividade para evitar vazamento de memória
 
-# Caminho absoluto para garantir que o Render encontre o cookies.txt
+# Caminho absoluto para garantir que o Render encontre o cookies.txt localmente
 base_dir = os.path.dirname(os.path.abspath(__file__))
 cookies_path = os.path.join(base_dir, "cookies.txt")
+
+# Tratamento defensivo: verifica se o arquivo de cookies existe para evitar crash silencioso
+cookiefile_arg = cookies_path if os.path.exists(cookies_path) else None
+if not cookiefile_arg:
+    print(
+        "⚠️ ATENÇÃO: Arquivo 'cookies.txt' não encontrado. O bot funcionará apenas com links públicos do SoundCloud/YouTube direto."
+    )
 
 ytdl_format_options = {
     "format": "ba*[ext=m4a]/b/best",
@@ -79,19 +89,14 @@ ytdl_format_options = {
     "logtostderr": False,
     "quiet": True,
     "no_warnings": True,
-    "default_search": "ytsearch",
+    # SEGURANÇA: Alterado de 'ytsearch' para 'scsearch' para evitar o banimento de IP/Datacenter do Render pelo YouTube
+    "default_search": "scsearch",
     "source_address": "0.0.0.0",
-    "cookiefile": "cookies.txt",
-    "extractor_args": {
-        "youtube": {
-            "player_client": [
-                "web_safari",
-                "web_embedded",
-                "-tv_downgraded",
-            ]  # Força o Safari e web, ignorando o cliente de TV que quebra
-        }
-    },
 }
+
+# Adiciona o arquivo de cookies dinamicamente apenas se ele realmente existir no diretório
+if cookiefile_arg:
+    ytdl_format_options["cookiefile"] = cookiefile_arg
 
 ytdl = yt_dlp.YoutubeDL(ytdl_format_options)
 
@@ -273,7 +278,6 @@ class YTDLSource(discord.PCMVolumeTransformer):
 async def play_next(ctx):
     guild_id = ctx.guild.id
 
-    # Cancela qualquer tarefa de inatividade pendente para este servidor
     if guild_id in disconnect_tasks:
         disconnect_tasks[guild_id].cancel()
         del disconnect_tasks[guild_id]
@@ -318,7 +322,6 @@ async def play_next(ctx):
             view = MusicControlView(bot)
             await ctx.send(embed=embed, view=view)
     else:
-        # Cria uma tarefa segura de inatividade (5 minutos)
         async def inactivity_timer():
             await asyncio.sleep(300)
             if (
@@ -342,11 +345,12 @@ async def play_next(ctx):
 async def on_ready():
     print(f"Conectado como {bot.user} (ID: {bot.user.id})")
     try:
-        with open("logo.png", "rb") as image:
-            await bot.user.edit(avatar=image.read())
-            print("Avatar atualizado automaticamente.")
+        if os.path.exists("logo.png"):
+            with open("logo.png", "rb") as image:
+                await bot.user.edit(avatar=image.read())
+                print("Avatar atualizado automaticamente.")
     except Exception:
-        print("Nenhuma 'logo.png' encontrada.")
+        print("Não foi possível carregar a 'logo.png'.")
     print("DJ Bolado online com segurança máxima ativa!")
 
 
@@ -365,7 +369,7 @@ async def on_command_error(ctx, error):
             )
         )
     if isinstance(error, commands.CommandNotFound):
-        return  # Ignora comandos inexistentes para não poluir o chat
+        return
     if isinstance(error, commands.MissingRequiredArgument):
         cmd = ctx.command.name if ctx.command else "comando"
         return await ctx.send(
@@ -382,14 +386,17 @@ async def on_command_error(ctx, error):
 async def ajuda(ctx):
     embed = discord.Embed(
         title="🤖 Ajuda - DJ Bolado (Blindado)",
-        description="Comandos seguros:",
+        description=(
+            "Comandos seguros (Busca padrão via SoundCloud para máxima"
+            " estabilidade no Render):"
+        ),
         color=discord.Color.blue(),
     )
     embed.add_field(
         name="Música",
         value=(
-            "`!tocar [termo]`\n`!pausar`\n`!retomar`\n`!pular`\n`!parar` (Requer"
-            " cargo DJ ou Admin)"
+            "`!tocar [termo ou link]`\n`!pausar`\n`!retomar`\n`!pular`\n`!parar`"
+            " (Requer cargo DJ ou Admin)"
         ),
         inline=False,
     )
@@ -515,7 +522,6 @@ async def tocar(ctx, *, query: str):
                 embed.add_field(name="Posição na Fila", value=str(len(queues[guild_id])))
                 await ctx.send(embed=embed)
             else:
-                # Remove o primeiro item que acabou de ser adicionado para o play_next rodar corretamente
                 queues[guild_id].pop(0)
                 ctx._last_player = player
                 
@@ -758,4 +764,5 @@ async def parar(ctx):
         )
 
 
+# Inicia a execução do bot com validação final de segurança
 bot.run(TOKEN)
