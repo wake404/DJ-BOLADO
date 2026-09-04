@@ -83,7 +83,7 @@ ytdl_format_options = {
     'source_address': '0.0.0.0',
     'cookiefile': cookies_path,
     'extractor_args': {
-        'youtube': {'player_client': ['android', 'web']}
+        'youtube': {'player_client': ['tv', 'web']}
     },
 }
 
