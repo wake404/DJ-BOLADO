@@ -68,7 +68,7 @@ base_dir = os.path.dirname(os.path.abspath(__file__))
 cookies_path = os.path.join(base_dir, "cookies.txt")
 
 ytdl_format_options = {
-    'format': 'bestaudio',  # Mais genérico e menos restritivo
+    'format': 'ba*[ext=m4a]/b/best',
     'noplaylist': True,
     'extractaudio': True,
     'audioformat': 'mp3',
