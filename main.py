@@ -81,9 +81,12 @@ ytdl_format_options = {
     'no_warnings': True,
     'default_search': 'ytsearch',
     'source_address': '0.0.0.0',
-    'cookiefile': 'cookies.txt',  # Certifique-se de que o arquivo de cookies está na raiz do projeto no Render
+    'cookiefile': 'cookies.txt',
+    # Correção definitiva para o bug do 'The page needs to be reloaded' com cookies:
     'extractor_args': {
-        'youtube': {'player_client': ['default', 'web_embedded', '-tv_downgraded']}
+        'youtube': {
+            'player_client': ['default', 'web_embedded', '-tv_downgraded']
+        }
     },
 }
 
