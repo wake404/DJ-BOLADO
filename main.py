@@ -7,6 +7,19 @@ from discord.ext import commands
 from dotenv import load_dotenv
 from flask import Flask
 import yt_dlp
+import subprocess
+
+# Atualiza o yt-dlp para a versão mais recente diretamente na inicialização do Render
+try:
+    print("Verificando atualizações do yt-dlp...")
+    subprocess.check_call(
+        ["pip", "install", "--upgrade", "--no-cache-dir", "yt-dlp"]
+    )
+    print("yt-dlp atualizado com sucesso para a última versão!")
+except Exception as e:
+    print(f"Não foi possível atualizar o yt-dlp automaticamente: {e}")
+
+
 
 # --- SERVIDOR WEB PARA O RENDER (Mantém a porta 8080 aberta) ---
 app = Flask("")
@@ -48,8 +61,12 @@ volumes = {}
 loop_modes = {}
 filters = {}
 disconnect_tasks = {}  # Gerencia tarefas de inatividade para evitar bugs
+import os
 
-# Configurações do extrator de mídia (yt-dlp) com segurança contra links maliciosos
+# Caminho absoluto para garantir que o Render encontre o cookies.txt
+base_dir = os.path.dirname(os.path.abspath(__file__))
+cookies_path = os.path.join(base_dir, "cookies.txt")
+
 ytdl_format_options = {
     "format": "bestaudio/best",
     "noplaylist": True,
@@ -64,9 +81,8 @@ ytdl_format_options = {
     "no_warnings": True,
     "default_search": "ytsearch",
     "source_address": "0.0.0.0",
-    "cookiefile": "cookies.txt",
+    "cookiefile": cookies_path,  # Aponta para o caminho absoluto seguro
 }
-
 ytdl = yt_dlp.YoutubeDL(ytdl_format_options)
 
 
