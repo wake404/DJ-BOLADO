@@ -63,9 +63,25 @@ ytdl_format_options = {
     "no_warnings": True,
     "default_search": "ytsearch",
     "source_address": "0.0.0.0",
+    "cookiefile": "cookies.txt",
 }
 
 ytdl = yt_dlp.YoutubeDL(ytdl_format_options)
+
+@bot.command(name="tocar")
+async def tocar(ctx, *, query: str):
+    if not ctx.author.voice:
+        await ctx.send("⚠️ Você precisa estar em um canal de voz para tocar música!")
+        return
+
+    voice_channel = ctx.author.voice.channel
+    
+    if not ctx.voice_client:
+        await voice_channel.connect()
+
+    await ctx.send(f"🔍 Buscando por: **{query}**...")
+    
+    # Aqui entra a lógica que utiliza a variável 'ytdl' para puxar o áudio e tocar na call
 
 
 # Função auxiliar de verificação: Checa se o usuário está no mesmo canal de voz do bot
