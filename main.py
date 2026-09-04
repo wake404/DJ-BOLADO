@@ -68,24 +68,27 @@ base_dir = os.path.dirname(os.path.abspath(__file__))
 cookies_path = os.path.join(base_dir, "cookies.txt")
 
 ytdl_format_options = {
-    'format': 'ba*[ext=m4a]/b/best',
-    'noplaylist': True,
-    'extractaudio': True,
-    'audioformat': 'mp3',
-    'outtmpl': '%(extractor)s-%(id)s-%(title)s.%(ext)s',
-    'restrictfilenames': True,
-    'nocheckcertificate': True,
-    'ignoreerrors': False,
-    'logtostderr': False,
-    'quiet': True,
-    'no_warnings': True,
-    'default_search': 'ytsearch',
-    'source_address': '0.0.0.0',
-    'cookiefile': 'cookies.txt',
-    # Correção definitiva para o bug do 'The page needs to be reloaded' com cookies:
-    'extractor_args': {
-        'youtube': {
-            'player_client': ['default', 'web_embedded', '-tv_downgraded']
+    "format": "ba*[ext=m4a]/b/best",
+    "noplaylist": True,
+    "extractaudio": True,
+    "audioformat": "mp3",
+    "outtmpl": "%(extractor)s-%(id)s-%(title)s.%(ext)s",
+    "restrictfilenames": True,
+    "nocheckcertificate": True,
+    "ignoreerrors": False,
+    "logtostderr": False,
+    "quiet": True,
+    "no_warnings": True,
+    "default_search": "ytsearch",
+    "source_address": "0.0.0.0",
+    "cookiefile": "cookies.txt",
+    "extractor_args": {
+        "youtube": {
+            "player_client": [
+                "web_safari",
+                "web_embedded",
+                "-tv_downgraded",
+            ]  # Força o Safari e web, ignorando o cliente de TV que quebra
         }
     },
 }
