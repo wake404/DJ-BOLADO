@@ -81,9 +81,9 @@ ytdl_format_options = {
     'no_warnings': True,
     'default_search': 'ytsearch',
     'source_address': '0.0.0.0',
-    'cookiefile': cookies_path,
+    'cookiefile': 'cookies.txt',  # <-- Certifique-se de que este arquivo existe e está no diretório correto do deploy
     'extractor_args': {
-        'youtube': {'player_client': ['tv', 'web']}
+        'youtube': {'player_client': ['default', 'web_embedded']}
     },
 }
 
