@@ -81,9 +81,9 @@ ytdl_format_options = {
     'no_warnings': True,
     'default_search': 'ytsearch',
     'source_address': '0.0.0.0',
-    'cookiefile': 'cookies.txt',  # <-- Certifique-se de que este arquivo existe e está no diretório correto do deploy
+    'cookiefile': 'cookies.txt',  # Certifique-se de que o arquivo de cookies está na raiz do projeto no Render
     'extractor_args': {
-        'youtube': {'player_client': ['default', 'web_embedded']}
+        'youtube': {'player_client': ['default', 'web_embedded', '-tv_downgraded']}
     },
 }
 
